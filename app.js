@@ -19,6 +19,7 @@ ConnectDb();
  */
 const app = express();
 const users = require('./routes/users');
+const films = require('./routes/films');
 
 /**
  * Backend application port
@@ -52,7 +53,14 @@ require('./config/passport')(passport);
  * Express Router for Users URL
  */
 app.use('/users', users);
+app.use('/films', films);
 
+// app.use(multer({
+//     dest: `./uploads/`,
+//     rename: function (fieldname, filename) {
+//         return filename;
+//     },
+// }));
 /**
  * Express Router for base URL
  */

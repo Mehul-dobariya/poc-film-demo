@@ -6,7 +6,7 @@ const Router = express.Router();
 const passport = require('passport');
 const jwt = require('jsonwebtoken');
 const config = require('../config/config');
-const User = require('../models/user');
+// const Film = require('../models/film');
 
 /** 
  * GET Requests starts here 
@@ -30,10 +30,12 @@ Router.get('/profile', passport.authenticate('jwt', {
 /**
  * Registration router
  */
+
 Router.post('/register', (req, res, next) => {
     let newUser = new User({
         'name': req.body.name,
         'email': req.body.email,
+        'userName': req.body.userName,
         'password': req.body.password
     });
 
@@ -56,11 +58,10 @@ Router.post('/register', (req, res, next) => {
  * Authenticate router
  */
 Router.post('/authenticate', (req, res, next) => {
-    console.log("HERE",req.body);
-    const email = req.body.email;
+    const userName = req.body.userName;
     const password = req.body.password;
 
-    User.getUserByUserName(email, (err, user) => {
+    User.getUserByUserName(userName, (err, user) => {
         if (err) throw err;
         if (!user) {
             return res.json({

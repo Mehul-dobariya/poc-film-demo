@@ -1,0 +1,51 @@
+.appBar {
+    flex-grow: 1;
+}
+
+.appBarTitle {
+    flex-grow: 1;
+    cursor: pointer;
+}
+
+.loginPaper {
+    display: 'flex';
+    flex-wrap: 'wrap';
+    width: 250px;
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+}
+
+.loginContent {
+    /* background: red; */
+    width: fit-content;
+    display: flex;
+    flex-wrap: 'wrap';
+    /* width: 300px;
+    height: 500px; */
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    /* padding:50px */
+}
+
+.loginTitle {
+    justify-content: center;
+    align-items: center;
+}
+
+.loginEle {
+    margin-top: 50px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.submit {
+    display: flex;
+    text-align: left;
+    justify-content: space-between;
+    align-items: center;
+}
