@@ -9,22 +9,6 @@ const config = require('../config/config');
 const User = require('../models/user');
 
 /** 
- * GET Requests starts here 
- * 
- */
-/**
- * Profile router
- */
-Router.get('/profile', passport.authenticate('jwt', {
-    'session': false
-}), (req, res, next) => {
-    res.json({
-        'user': req.user
-    });
-});
-/** GET requests ends here */
-
-/** 
  * POST requests starts here 
  */
 /**
@@ -56,7 +40,6 @@ Router.post('/register', (req, res, next) => {
  * Authenticate router
  */
 Router.post('/authenticate', (req, res, next) => {
-    console.log("HERE",req.body);
     const email = req.body.email;
     const password = req.body.password;
 
@@ -72,11 +55,11 @@ Router.post('/authenticate', (req, res, next) => {
                 if (err) throw err;
                 if (isMatched) {
                     const token = jwt.sign(user.toJSON(), config.secret, {
-                        'expiresIn': 604800 /*1 week to seconds */
+                        'expiresIn': 18000 /*5 hours to seconds */
                     });
                     res.json({
                         'success': true,
-                        'token': `JWT ${token}`,
+                        'token': `${token}`,
                         'user': {
                             'id': user._id,
                             'name': user.name,

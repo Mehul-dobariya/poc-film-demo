@@ -8,7 +8,6 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const passport = require('passport');
 
-
 /**
  * Connect to mongo via mongoose 
  */
@@ -43,6 +42,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.json());
 
 /**
+* use the middleware of bodyparser
+*/
+app.use(bodyParser.urlencoded({ extended: true }))
+
+/**
  * Passport middleware to protect routes
  */
 app.use(passport.initialize());
@@ -55,12 +59,6 @@ require('./config/passport')(passport);
 app.use('/users', users);
 app.use('/films', films);
 
-// app.use(multer({
-//     dest: `./uploads/`,
-//     rename: function (fieldname, filename) {
-//         return filename;
-//     },
-// }));
 /**
  * Express Router for base URL
  */

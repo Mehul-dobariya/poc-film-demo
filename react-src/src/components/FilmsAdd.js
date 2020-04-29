@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
-import { TextField, Paper, Button, Grid, FormControl, InputLabel, OutlinedInput, InputAdornment, Box, Typography } from '@material-ui/core';
+import { TextField, Paper, Button, Grid, MenuItem, FormControl, InputLabel, OutlinedInput, InputAdornment, Box, Typography } from '@material-ui/core';
 import axios from "axios";
+import moment from 'moment';
 import SweetAlert from 'react-bootstrap-sweetalert';
 import { withRouter } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -8,7 +9,6 @@ import CloseIcon from '@material-ui/icons/Close';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Header from './Header';
-import CountryPicker from './CountryPicker';
 import DateFnsUtils from '@date-io/date-fns';
 import 'date-fns';
 import Rating from '@material-ui/lab/Rating';
@@ -17,76 +17,91 @@ import {
     MuiPickersUtilsProvider,
     KeyboardDatePicker,
 } from '@material-ui/pickers';
-// const useStyles = makeStyles((theme) => ({
-//     root: {
-//         '& > *': {
-//             margin: theme.spacing(3),
-//             width: '35ch',
-//         },
-//     },
-// }));
-// const usePaperStyles = makeStyles((theme) => ({
-//     root: {
-//         display: 'flex',
-//         flexWrap: 'wrap',
-//         '& > *': {
-//             margin: theme.spacing(10),
-//             width: theme.spacing(75),
-//             height: theme.spacing(60),
-//         },
-//     },
-// }));
+const countryChoice = [
+    { code: 'SG', label: 'Singapore', phone: '65' },
+    { code: 'US', label: 'United States', phone: '1' },
+    { code: 'SE', label: 'Sweden', phone: '46' },
+    { code: 'SA', label: 'Saudi Arabia', phone: '966' },
+    { code: 'NZ', label: 'New Zealand', phone: '64' },
+    { code: 'MX', label: 'Mexico', phone: '52' },
+    { code: 'MY', label: 'Malaysia', phone: '60' },
+    { code: 'MA', label: 'Morocco', phone: '212' },
+    { code: 'LK', label: 'Sri Lanka', phone: '94' },
+    { code: 'JP', label: 'Japan', phone: '81' },
+    { code: 'IT', label: 'Italy', phone: '39' },
+    { code: 'IN', label: 'India', phone: '91' },
+    { code: 'DE', label: 'Germany', phone: '49' },
+    { code: 'CN', label: 'China', phone: '86' },
+    { code: 'CH', label: 'Switzerland', phone: '41' },
+    { code: 'AE', label: 'United Arab Emirates', phone: '971' },
+    { code: 'AT', label: 'Austria', phone: '43' },
+    { code: 'AU', label: 'Australia', phone: '61' },
+    { code: 'FR', label: 'France', phone: '33' },
+    { code: 'GB', label: 'United Kingdom', phone: '44' },
+    { code: 'HK', label: 'Hong Kong', phone: '852' },
+    { code: 'ID', label: 'Indonesia', phone: '62' },
+    { code: 'IE', label: 'Ireland', phone: '353' },
+    { code: 'IL', label: 'Israel', phone: '972' },
+];
+
+const genreOptions = [
+    { id: 1, label: 'Horror' },
+    { id: 2, label: 'Adventure' },
+    { id: 3, label: 'Sci-Fi' },
+    { id: 4, label: 'Comedy' },
+    { id: 5, label: 'Action' },
+    { id: 6, label: 'Documentary' },
+    { id: 7, label: 'Thriller' },
+    { id: 8, label: 'Romance' },
+    { id: 9, label: 'Crime' },
+    { id: 10, label: 'Animation' },
+    { id: 11, label: 'Drama' },
+];
 class FilmsAdd extends Component {
     constructor(props) {
         super(props);
         this.state = {
             file: null,
             fileToDisplay: null,
-            userName: '',
-            userEmail: '',
-            userPassword: '',
-            confirmPassword: '',
+            filmName: '',
+            filmDescription: '',
+            filmReleaseDate: new Date(),
+            filmRating: 0,
+            filmTicketPrice: 0,
+            countryOrigin: '',
+            selectedFilmGenre: [],
             sweetOpenSuccess: false,
             sweetOpenError: false,
             submitting: false,
             errors: {},
-            filmReleaseDate: new Date(),
-            filmRating: 0
+
 
         }
     }
+    // Handle Validations
     handleValidation() {
         let errors = {};
         let formIsValid = true;
 
-        //User Name
-        if (!this.state.userName) {
+        //Film Name
+        if (!this.state.filmName) {
             formIsValid = false;
-            errors["firstName"] = "Please enter first name";
+            errors["filmName"] = "Please enter Film name";
         }
-
-        //Email
-        if (!this.state.userEmail) {
+        //Film Description
+        if (!this.state.filmDescription) {
             formIsValid = false;
-            errors["email"] = "Please enter mail";
+            errors["filmDescription"] = "Please enter Film description";
         }
-        if (typeof this.state["userEmail"] !== "undefined") {
-            let lastAtPos = this.state["userEmail"].lastIndexOf('@');
-            let lastDotPos = this.state["userEmail"].lastIndexOf('.');
-
-            if (!(lastAtPos < lastDotPos && lastAtPos > 0 && this.state["userEmail"].indexOf('@@') === -1 && lastDotPos > 2 && (this.state["userEmail"].length - lastDotPos) > 2)) {
-                formIsValid = false;
-                errors["email"] = "Email is not valid";
-            }
-        }
-
-        // Password
-        if (this.state.userPassword && (this.state.userPassword !== this.state.confirmPassword)) {
+        //Film Origin
+        if (!this.state.countryOrigin) {
             formIsValid = false;
-            errors["confirmPassword"] = "Password dosen't match";
+            errors["countryOrigin"] = "Please enter Film origin";
         }
-        if (this.state.userPassword === this.state.confirmPassword) {
-            errors["confirmPassword"] = "";
+        //Film Genre
+        if (Object.keys(this.state.selectedFilmGenre).length === 0) {
+            formIsValid = false;
+            errors["selectedFilmGenre"] = "Please enter Film genre";
         }
         this.setState({ errors: errors });
         return formIsValid;
@@ -95,12 +110,29 @@ class FilmsAdd extends Component {
         e.preventDefault();
         await this.setState({ submitting: true });
         if (this.handleValidation()) {
-            let data = {
-                "name": this.state.userName,
-                "email": this.state.userEmail,
-                "password": this.state.userPassword
+            let genre_array = [];
+            this.state.selectedFilmGenre.map((genre) => {
+                genre_array.push(genre.label)
+            })
+            // Creating FormData
+            const formData = new FormData();
+            if (this.state.file !== null && this.state.file !== '') {
+                formData.append('filmPic', this.state.file);
+            } else {
+                formData.append('filmPic', '');
             }
-            axios.post(`${process.env.REACT_APP_API_URL}users/register`, data)
+            formData.append('name', this.state.filmName);
+            formData.append('description', this.state.filmDescription);
+            formData.append('releaseDate', moment(this.state.filmReleaseDate).toISOString());
+            formData.append('ratings', this.state.filmRating);
+            formData.append('ticketPrice', this.state.filmTicketPrice);
+            formData.append('country', this.state.countryOrigin);
+            formData.append('genre', genre_array);
+            const options = {
+                headers: { 'content-type': 'multipart/form-data' }
+            };
+            // Api call to add film
+            axios.post(`${process.env.REACT_APP_API_URL}films/addFilms`, formData, options)
                 .then(async (response) => {
                     if (response.data.success) {
                         await this.setState({ sweetOpenSuccess: true, submitting: false });
@@ -113,7 +145,8 @@ class FilmsAdd extends Component {
                 });
         }
         else {
-            console.log("Validation Error");
+            // console.log("Validation Error");\
+            // toast message on validation error
             toast.error("Validation Error", {
                 hideProgressBar: true,
                 draggable: false,
@@ -124,12 +157,14 @@ class FilmsAdd extends Component {
             // alert("Form has errors.")
         }
     }
+    // handle file change
     onChange = (event) => {
         this.setState({
             file: event.target.files[0],
             fileToDisplay: URL.createObjectURL(event.target.files[0])
         });
     }
+    // remove selected file
     removeFile = (event) => {
         this.setState({
             file: null,
@@ -137,6 +172,7 @@ class FilmsAdd extends Component {
             imageBlank: true
         })
     }
+    //** Handle Click events */
     handleSignIn = (e) => {
         this.props.history.push("/signIn");
     }
@@ -144,14 +180,14 @@ class FilmsAdd extends Component {
         this.props.history.push("/films");
     }
     handleSuccess() {
-        this.props.history.push(`/signIn`);
+        this.props.history.push(`/films`);
         this.setState({ sweetOpenSuccess: false });
     }
     handleError() {
         this.setState({ sweetOpenError: false });
     }
     addDefaultSrc(ev) {
-        ev.target.src = 'media/images/no_preview.jpg';
+        ev.target.src = 'media/images/product_image_not_found.gif';
     }
     render() {
         return (
@@ -159,71 +195,99 @@ class FilmsAdd extends Component {
                 <div>
                     <Header />
                 </div>
-                <div className="loginContent">
+                <div>
                     <Paper  >
                         <form noValidate autoComplete="off" onSubmit={this.handleSubmit}>
                             <div >
                                 <label className="loginTitle" style={{ color: "#00004d" }}>Add Film </label>
                             </div>
-                            <div className="loginContent">
-                                <TextField style={{ marginBottom: "15px" }} label="Name" variant="outlined" onChange={(e) => this.setState({ userName: e.target.value })} />
-                                <TextField style={{ marginBottom: "15px" }} multiline rowsMax={4} label="Description" variant="outlined" onChange={(e) => this.setState({ userEmail: e.target.value })} />
-                                <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                                    <Grid container justify="space-around">
-                                        <KeyboardDatePicker
-                                            disableToolbar
-                                            variant="inline"
-                                            format="dd/MM/yyyy"
-                                            margin="normal"
-                                            id="date-picker-inline"
-                                            placeholder="Select Date"
-                                            value={this.state.filmReleaseDate}
-                                            onChange={(date) => this.setState({ filmReleaseDate: date })}
-                                            KeyboardButtonProps={{
-                                                'aria-label': 'change date',
-                                            }}
-                                        /></Grid>
-                                </MuiPickersUtilsProvider>
+                            <div>
+                                <Grid>
+                                    <TextField style={{ marginBottom: "15px" }} label="Name" variant="outlined" onChange={(e) => this.setState({ filmName: e.target.value })} />
+                                </Grid>
+                                <Grid>
+                                    <TextField style={{ marginBottom: "15px" }} multiline rows={2} rowsMax={5} label="Description" variant="outlined" onChange={(e) => this.setState({ filmDescription: e.target.value })} />
+                                </Grid>
+                                <Grid>
+                                    <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                                        <Grid container justify="space-around">
+                                            <KeyboardDatePicker
+                                                disableToolbar
+                                                variant="inline"
+                                                format="dd/MM/yyyy"
+                                                margin="normal"
+                                                id="date-picker-inline"
+                                                placeholder="Select Date"
+                                                value={this.state.filmReleaseDate}
+                                                onChange={(date) => this.setState({ filmReleaseDate: date })}
+                                                KeyboardButtonProps={{
+                                                    'aria-label': 'change date',
+                                                }}
+                                            /></Grid>
+                                    </MuiPickersUtilsProvider>
+                                </Grid>
                                 {/* :TODO Rating */}
-                                <Box component="fieldset" mb={3} borderColor="transparent">
-                                    <Typography component="legend">Controlled</Typography>
-                                    <Rating
-                                        name="simple-controlled"
-                                        // value={value}
-                                        onChange={(event, newValue) => {
-                                            this.setState({ filmRating: newValue });
-                                        }}
-                                    />
-                                </Box>
-                                <FormControl variant="outlined">
-                                    <InputLabel htmlFor="outlined-adornment-amount">Ticket Price</InputLabel>
-                                    <OutlinedInput
-                                        id="outlined-adornment-amount"
-                                        // value={values.amount}
-                                        // onChange={handleChange('amount')}
-                                        startAdornment={<InputAdornment position="start">$</InputAdornment>}
-                                        labelWidth={85}
-                                    />
-                                </FormControl>
+                                <Grid>
+                                    <Box component="fieldset" mb={3} borderColor="transparent">
+                                        <Typography component="legend">Rating</Typography>
+                                        <Rating
+                                            name="simple-controlled"
+                                            value={this.state.filmRating}
+                                            onChange={(event, newValue) => {
+                                                this.setState({ filmRating: newValue });
+                                            }}
+                                        />
+                                    </Box>
+                                </Grid>
+                                <Grid>
+                                    <FormControl variant="outlined">
+                                        <InputLabel htmlFor="outlined-adornment-amount">Ticket Price</InputLabel>
+                                        <OutlinedInput
+                                            id="outlined-adornment-amount"
+                                            value={this.state.filmTicketPrice}
+                                            onChange={(e) => this.setState({ filmTicketPrice: e.target.value })}
+                                            startAdornment={<InputAdornment position="start">$</InputAdornment>}
+                                            labelWidth={85}
+                                        />
+                                    </FormControl>
+                                </Grid>
                                 {/* country selector */}
-                                <CountryPicker />
+                                <Grid>
+                                    <TextField
+                                        id="stausUpdate"
+                                        select
+                                        style={{ width: "200px" }}
+                                        margin="dense"
+                                        label="Select Country"
+                                        value={this.state.countryOrigin}
+                                        onChange={(e) => this.setState({ countryOrigin: e.target.value })}
+                                        helperText=""
+                                        variant="outlined"
+                                    >
+                                        {countryChoice.map(option => (
+                                            <MenuItem key={option.label} value={option.label}>
+                                                {option.label}
+                                            </MenuItem>
+                                        ))}
+                                    </TextField>
+                                </Grid>
                                 {/* Genre */}
                                 <Multiselect
-                                    options={this.state.payorNameData} // Options to display in the dropdown
-                                    selectedValues={this.state.selectedPayorName} // Preselected value to persist in dropdown
-                                    onSelect={(e) => this.setState({ selectedPayorName: e })} // Function will trigger on select event
-                                    onRemove={(e) => this.setState({ selectedPayorName: e })} // Function will trigger on remove event
-                                    displayValue="value" // Property name to display in the dropdown options
+                                    options={genreOptions} // Options to display in the dropdown
+                                    selectedValues={this.state.selectedFilmGenre} // Preselected value to persist in dropdown
+                                    onSelect={(e) => this.setState({ selectedFilmGenre: e })} // Function will trigger on select event
+                                    onRemove={(e) => this.setState({ selectedFilmGenre: e })} // Function will trigger on remove event
+                                    displayValue="label" // Property name to display in the dropdown options
                                 />
                                 <Grid>
                                     <label>Upload a Photo</label>
                                 </Grid>
                                 <Grid>
-                                    <input className="choose-file-input w-100" type="file" onChange={this.onChange} />
+                                    <input className="choose-file-input w-100" name="filmPic" type="file" accept="image/*" onChange={this.onChange} />
                                 </Grid>
-                                <Grid item md={2} lg={4} className="image-preview">
-                                    <img style={{ maxWidth: "60px" }} src={this.state.fileToDisplay} onError={this.addDefaultSrc} />
-                                    {(this.state.pic || this.state.fileToDisplay) &&
+                                <Grid>
+                                    <img style={{ maxWidth: "60px" }} src={this.state.fileToDisplay} onError={this.addDefaultSrc} alt="No Preview Available" />
+                                    {(this.state.fileToDisplay) &&
                                         <CloseIcon onClick={this.removeFile} />
                                     }
                                 </Grid>
@@ -246,16 +310,18 @@ class FilmsAdd extends Component {
                     </Paper>
 
                 </div>
+                {/* Display Alert on Success */}
                 {this.state.sweetOpenSuccess && (
                     <SweetAlert
                         success
                         confirmBtnText="Continue"
                         confirmBtnBsStyle="success"
-                        title="Role created Successfully"
+                        title="Film Added Successfully"
                         onConfirm={this.handleSuccess.bind(this)}
                     >
                     </SweetAlert>
                 )}
+                {/* Display Alert on Error */}
                 {this.state.sweetOpenError && (
                     <SweetAlert
                         error

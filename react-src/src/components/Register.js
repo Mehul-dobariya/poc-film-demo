@@ -164,7 +164,7 @@ class Register extends Component {
                         success
                         confirmBtnText="Continue"
                         confirmBtnBsStyle="success"
-                        title="Role created Successfully"
+                        title="Registered Successfully"
                         onConfirm={this.handleSuccess.bind(this)}
                     >
                     </SweetAlert>

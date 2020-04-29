@@ -35,14 +35,16 @@ const FilmsSchema = mongoose.Schema({
         'required': true
     },
     'genre': {
-        'type': Array,
+        'type': Object,
         'required': true
     },
     'photo': {
-        'data': Buffer,
-        'contentType': String,
+        'type': String,
         'required': true
     },
+    'comments':{
+        'type':Array
+    }
 });
 
 /**
@@ -59,45 +61,25 @@ const Film = module.exports = mongoose.model('Film', FilmsSchema);
  * @param {String} callback.email - Film email.
  * @param {String} callback.userName - Film userName.
  */
-module.exports.getFilmById = (id, callback) => {
-    Film.findById(id, callback);
+module.exports.getAllFilm = (callback) => {
+    Film.find(null,callback);
 };
 
 /**
- * Query Film by filmName.
- */
-/**
- * @param {number} userName - Unique filmName.
+ * @param {number} id - Unique film id.
  * @param {Object} callback - Film object.
  * @param {*} callback.id - Film id.
  * @param {String} callback.name - Film name.
  * @param {String} callback.email - Film email.
- * @param {String} callback.userName - Film filmName.
+ * @param {String} callback.userName - Film userName.
  */
-module.exports.getUserByUserName = (userName, callback) => {
-    const query = {
-        'userName': userName
-    };
-    User.findOne(query, callback);
+module.exports.getFilmById = (id, callback) => {
+    Film.findById(id, callback);
 };
 
 /**
  * Add film
  */
 module.exports.addFilm = async (newFilm, callback) => {
-    var newItem = new Item();
-    newItem.img.data = fs.readFileSync(newFilm.files.filmPhoto.path)
-    newItem.img.contentType = `image / png`;
-    await newItem.save(callback);
-
-};
-
-/**
- * Compare password
- */
-module.exports.comparePassword = (password, hash, callback) => {
-    bcrypt.compare(password, hash, (err, isMatched) => {
-        if (err) throw err;
-        callback(null, isMatched);
-    });
+    await newFilm.save(callback);
 };

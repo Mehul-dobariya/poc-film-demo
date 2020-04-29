@@ -3,9 +3,25 @@
  */
 const express = require('express');
 const Router = express.Router();
+const moment = require("moment");
 const passport = require('passport');
 const jwt = require('jsonwebtoken');
 const config = require('../config/config');
+const multer = require('multer');
+const path = require('path');
+const Film = require('../models/film');
+var helper = require('./helper');
+var storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'public/uploads');
+    },
+    filename: function (req, file, cb) {
+        cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname))
+    }
+})
+var upload = multer({
+    storage: storage
+})
 // const Film = require('../models/film');
 
 /** 
@@ -13,89 +29,90 @@ const config = require('../config/config');
  * 
  */
 /**
- * Profile router
+ * List Films
  */
-Router.get('/profile', passport.authenticate('jwt', {
-    'session': false
-}), (req, res, next) => {
-    res.json({
-        'user': req.user
+Router.get('/films', (req, res) => {
+    Film.getAllFilm(async (err, filmList) => {
+        if (err) {
+            console.log("err", err);
+            res.json({
+                'success': false,
+                'message': 'Error while fetching film data'
+            });
+        } else {
+            await filmList.map((film, index) => {
+                filmList[index]["photo"] = "http://localhost:5000/uploads/" + film.photo
+            })
+            res.json({
+                'success': true,
+                'message': 'success',
+                data: filmList
+            });
+        }
     });
-});
+})
+
+/**
+ * Film by id
+ */
+Router.get('/film/detail', (req, res) => {
+    Film.getFilmById(req.query.id, (err, filmData) => {
+        if (err) throw err;
+        if (!filmData) {
+            return res.json({
+                'success': false,
+                'message': 'Film not found.'
+            });
+        } else {
+            filmData["photo"] = "http://localhost:5000/uploads/" + filmData.photo;
+            res.json({
+                'success': true,
+                'message': 'success',
+                'data': filmData
+            });
+        }
+    });
+})
 /** GET requests ends here */
 
 /** 
  * POST requests starts here 
  */
 /**
- * Registration router
+ * Add new Film
  */
 
-Router.post('/register', (req, res, next) => {
-    let newUser = new User({
+Router.post('/addFilms', upload.single('filmPic'), (req, res, next) => {
+    console.log("Body", req.body);
+    const file = req.file;
+    if (!file) {
+        const err = new Error("Please upload file");
+        error.httpStatusCode = 400;
+        return next(error);
+    }
+    let newFilm = new Film({
         'name': req.body.name,
-        'email': req.body.email,
-        'userName': req.body.userName,
-        'password': req.body.password
+        'description': req.body.description,
+        'releaseDate': new Date(req.body.releaseDate),
+        'ratings': req.body.ratings,
+        'ticketPrice': req.body.ticketPrice,
+        'country': req.body.country,
+        'genre': req.body.genre,
+        'photo': file.filename
     });
-
-    User.addUser(newUser, (err, user) => {
+    Film.addFilm(newFilm, (err, film) => {
         if (err) {
+            console.log("err", err);
             res.json({
                 'success': false,
-                'message': 'Failed to register user.'
+                'message': 'Failed to save Film.'
             });
         } else {
             res.json({
                 'success': true,
-                'message': 'User registered.'
+                'message': 'Film added successfully'
             });
         }
     });
 });
-
-/**
- * Authenticate router
- */
-Router.post('/authenticate', (req, res, next) => {
-    const userName = req.body.userName;
-    const password = req.body.password;
-
-    User.getUserByUserName(userName, (err, user) => {
-        if (err) throw err;
-        if (!user) {
-            return res.json({
-                'success': false,
-                'message': 'User not found.'
-            });
-        } else {
-            User.comparePassword(password, user.password, (err, isMatched) => {
-                if (err) throw err;
-                if (isMatched) {
-                    const token = jwt.sign(user.toJSON(), config.secret, {
-                        'expiresIn': 604800 /*1 week to seconds */
-                    });
-                    res.json({
-                        'success': true,
-                        'token': `JWT ${token}`,
-                        'user': {
-                            'id': user._id,
-                            'name': user.name,
-                            'userName': user.userName,
-                            'email': user.email
-                        }
-                    });
-                } else {
-                    return res.json({
-                        'success': false,
-                        'message': 'Incorrect password.'
-                    });
-                }
-            });
-        }
-    });
-
-});
-/** POST requests ends here */
-
 module.exports = Router;

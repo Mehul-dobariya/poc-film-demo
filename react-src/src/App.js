@@ -5,6 +5,7 @@ import Films from './components/Films';
 import FilmsAdd from './components/FilmsAdd';
 import Login from './components/Login';
 import Register from './components/Register';
+import FilmDetail from './components/FilmDetail';
 import {
   BrowserRouter as Router,
   Switch,
@@ -20,6 +21,7 @@ function App() {
           <Redirect to="/films" />
         )} />
         <Route exact path="/films" component={Films} />
+        <Route path="/films/detail" component={FilmDetail} />
         <Route exact path="/films/create" component={FilmsAdd} />
         <Route path="/signIn" component={Login} />
         <Route path="/signUp" component={Register} />
