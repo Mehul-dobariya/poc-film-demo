@@ -2,7 +2,7 @@
  * Import node modules to use as a middleware
  */
 const express = require('express');
-const ConnectDb = require('./config/connection')
+const ConnectDb = require('./config/connection');
 const path = require('path');
 const bodyParser = require('body-parser');
 const cors = require('cors');

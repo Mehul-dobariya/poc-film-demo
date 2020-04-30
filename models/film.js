@@ -42,8 +42,9 @@ const FilmsSchema = mongoose.Schema({
         'type': String,
         'required': true
     },
-    'comments':{
-        'type':Array
+    'comments': {
+        'type': Array,
+        'value': [{}]
     }
 });
 
@@ -62,7 +63,7 @@ const Film = module.exports = mongoose.model('Film', FilmsSchema);
  * @param {String} callback.userName - Film userName.
  */
 module.exports.getAllFilm = (callback) => {
-    Film.find(null,callback);
+    Film.find(null, callback);
 };
 
 /**
@@ -82,4 +83,11 @@ module.exports.getFilmById = (id, callback) => {
  */
 module.exports.addFilm = async (newFilm, callback) => {
     await newFilm.save(callback);
+};
+
+/**
+ * Add comment
+ */
+module.exports.addComment = async (newComment, callback) => {
+    await Film.updateOne({ "_id": newComment.id }, { $addToSet: { "comments": newComment.data } }, callback);
 };

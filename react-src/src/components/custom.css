@@ -49,3 +49,17 @@
     justify-content: space-between;
     align-items: center;
 }
+
+.commentContainer {
+    margin-top: 15px;
+    border-style: groove;
+    width: 40%;
+}
+.comment {
+    border: 1px;
+    border-color: darkgrey;
+    border-style: solid;
+    width: 90%;
+    padding: 20px;
+    margin: 5px;
+}

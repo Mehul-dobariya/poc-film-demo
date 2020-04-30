@@ -83,7 +83,6 @@ Router.get('/film/detail', (req, res) => {
  */
 
 Router.post('/addFilms', upload.single('filmPic'), (req, res, next) => {
-    console.log("Body", req.body);
     const file = req.file;
     if (!file) {
         const err = new Error("Please upload file");
@@ -111,6 +110,43 @@ Router.post('/addFilms', upload.single('filmPic'), (req, res, next) => {
             res.json({
                 'success': true,
                 'message': 'Film added successfully'
+            });
+        }
+    });
+});
+
+/**
+ * Add new comment
+ */
+Router.post('/addComment', helper.verifyToken, (req, res, next) => {
+    let newComment = {
+        'id': req.body.id,
+        'data': { "author": req.body.user, "text": req.body.text }
+    };
+    Film.addComment(newComment, (err, comment) => {
+        if (err) {
+            console.log("err", err);
+            res.json({
+                'success': false,
+                'message': 'Failed to save comment.'
+            });
+        } else {
+            // populate new comment
+            Film.getFilmById(req.body.id, (err, filmData) => {
+                if (err) throw err;
+                if (!filmData) {
+                    return res.json({
+                        'success': false,
+                        'message': 'Film not found.'
+                    });
+                } else {
+                    filmData["photo"] = "http://localhost:5000/uploads/" + filmData.photo;
+                    res.json({
+                        'success': true,
+                        'message': 'success',
+                        'data': filmData
+                    });
+                }
             });
         }
     });
