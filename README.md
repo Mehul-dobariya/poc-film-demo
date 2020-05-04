@@ -9,3 +9,6 @@ Run Frotend(React)
 
 - npm install
 - npm start
+
+Run Test(Node)
+- npm run test
