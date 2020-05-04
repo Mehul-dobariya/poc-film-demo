@@ -11,8 +11,9 @@ const passport = require('passport');
 /**
  * Connect to mongo via mongoose 
  */
-ConnectDb();
-
+if(process.env.NODE_ENV !== 'test ') {
+    ConnectDb();
+} 
 /**
  * Initialize express and import routes for express
  */
@@ -69,6 +70,4 @@ app.get('/', (req, res) => {
 /**
  * Start application
  */
-app.listen(port, () => {
-    console.log(`server started on port ${port}`);
-});
+module.exports = app.listen(port, () => { console.log(`server started on port ${port}`); });

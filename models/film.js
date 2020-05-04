@@ -39,8 +39,7 @@ const FilmsSchema = mongoose.Schema({
         'required': true
     },
     'photo': {
-        'type': String,
-        'required': true
+        'type': String
     },
     'comments': {
         'type': Array,

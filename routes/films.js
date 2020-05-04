@@ -84,11 +84,11 @@ Router.get('/film/detail', (req, res) => {
 
 Router.post('/addFilms', upload.single('filmPic'), (req, res, next) => {
     const file = req.file;
-    if (!file) {
-        const err = new Error("Please upload file");
-        error.httpStatusCode = 400;
-        return next(error);
-    }
+    // if (!file) {
+    //     const err = new Error("Please upload file");
+    //     err.httpStatusCode = 400;
+    //     return next(error);
+    // }
     let newFilm = new Film({
         'name': req.body.name,
         'description': req.body.description,
@@ -97,7 +97,7 @@ Router.post('/addFilms', upload.single('filmPic'), (req, res, next) => {
         'ticketPrice': req.body.ticketPrice,
         'country': req.body.country,
         'genre': req.body.genre,
-        'photo': file.filename
+        'photo': (file) ? file.filename : ''
     });
     Film.addFilm(newFilm, (err, film) => {
         if (err) {

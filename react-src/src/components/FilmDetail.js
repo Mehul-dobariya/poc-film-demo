@@ -90,7 +90,7 @@ class FilmDetail extends Component {
         return (
             <>
                 <Header />
-                <div style={{ marginTop: "20px", marginLeft: "20px" }}>
+                <div style={{ marginTop: "20px", marginLeft: "30px"}}>
                     <div>
                         <img style={{ maxWidth: "300px" }} src={this.state.filmData.photo} onError={this.addDefaultSrc} alt="No Preview Available" />
                     </div>
